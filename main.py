@@ -10,7 +10,11 @@ genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 # AI එකට දෙන විශේෂ උපදෙස් (System Instruction)
 # මෙතැනදී අපි AI එකට කියනවා ඔහු දක්ෂ ගුරුවරයෙක් වගේ කරුණු සරලව කියල දෙන්න කියලා.
 instruction = "You are a helpful and patient educational tutor. Explain concepts simply in Sinhala and English. Use examples."
-model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=instruction)
+model = # වැඩ කරන Model එක ස්වයංක්‍රීයව හඳුනා ගැනීමට
+available_models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+# සාමාන්‍යයෙන් පළමු model එක තෝරා ගනී
+model_name = available_models[0] if available_models else 'gemini-1.5-flash'
+model = genai.GenerativeModel(model_name)
 
 st.title("🎓 AI අධ්‍යාපනික සහායක")
 st.write("ඕනෑම විෂයක ගැටලුවක් මෙතනින් අහන්න.")
