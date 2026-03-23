@@ -1,61 +1,37 @@
 import streamlit as st
 import google.generativeai as genai
-from PyPDF2 import PdfReader
 
-# 1. Page Config & UI Styling
-st.set_page_config(page_title="AI PDF Tutor", layout="wide")
+# Page Configuration
+st.set_page_config(page_title="AI Tutor", page_icon="🎓")
 
-st.markdown("""
-    <style>
-    .stApp { background-color: #F8F9FC; }
-    .main .block-container { padding: 2rem; max-width: 900px; }
-    .stButton>button { background-color: #6366F1; color: white; border-radius: 12px; width: 100%; }
-    </style>
-    """, unsafe_allow_html=True)
-
-# 2. API Setup
+# API Key Setup
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model = genai.GenerativeModel('gemini-1.5-flash')
 
-# 3. Sidebar - PDF Upload
-with st.sidebar:
-    st.title("🎓 Study Material")
-    uploaded_pdf = st.file_uploader("ඔබේ PDF ගොනුව මෙතනට දමන්න", type=['pdf'])
-    st.info("PDF එක අප්ලෝඩ් කර ප්‍රශ්න අසන්න හෝ කෙටි සටහන් ඉල්ලන්න.")
+# AI එකට දෙන විශේෂ උපදෙස් (System Instruction)
+# මෙතැනදී අපි AI එකට කියනවා ඔහු දක්ෂ ගුරුවරයෙක් වගේ කරුණු සරලව කියල දෙන්න කියලා.
+instruction = "You are a helpful and patient educational tutor. Explain concepts simply in Sinhala and English. Use examples."
+model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=instruction)
 
-# 4. PDF එකේ අකුරු කියවීමේ Function එක
-def get_pdf_text(pdf_file):
-    text = ""
-    pdf_reader = PdfReader(pdf_file)
-    for page in pdf_reader.pages:
-        text += page.extract_text()
-    return text
+st.title("🎓 AI අධ්‍යාපනික සහායක")
+st.write("ඕනෑම විෂයක ගැටලුවක් මෙතනින් අහන්න.")
 
-# 5. Main Content
-st.title("📚 AI PDF Assistant")
+# Chat History එක තබා ගැනීමට
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-if uploaded_pdf:
-    # PDF එකෙන් Text ලබා ගැනීම
-    with st.spinner("PDF එක කියවමින් පවතී..."):
-        context_text = get_pdf_text(uploaded_pdf)
-    
-    st.success("PDF එක සාර්ථකව කියවන ලදී!")
-    
-    # කෙටි සටහන් සෑදීමේ Button එක
-    if st.button("📝 මෙම පාඩමේ කෙටි සටහනක් (Summary) සාදන්න"):
-        prompt = f"Please provide a detailed summary of this text in Sinhala and English: {context_text[:10000]}"
+# පරණ මැසේජ් පෙන්වීම
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# User ගෙන් ප්‍රශ්නය ලබා ගැනීම
+if prompt := st.chat_input("ඔබට ඉගෙන ගැනීමට අවශ්‍ය මොනවාද?"):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    # AI එකෙන් පිළිතුර ලබා ගැනීම
+    with st.chat_message("assistant"):
         response = model.generate_content(prompt)
-        st.subheader("කෙටි සටහන:")
-        st.write(response.text)
-
-    st.markdown("---")
-    
-    # ප්‍රශ්න ඇසීමේ කොටස
-    user_question = st.text_input("මෙම PDF එක ගැන ඕනෑම ප්‍රශ්නයක් අහන්න:")
-    if user_question:
-        full_prompt = f"Based on this content: {context_text[:10000]}\n\nAnswer the question: {user_question}"
-        with st.chat_message("assistant"):
-            response = model.generate_content(full_prompt)
-            st.write(response.text)
-else:
-    st.warning("කරුණාකර ආරම්භ කිරීමට PDF ගොනුවක් අප්ලෝඩ් කරන්න.")
+        st.markdown(response.text)
+        st.session_state.messages.append({"role": "assistant", "content": response.text})
