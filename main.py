@@ -17,11 +17,7 @@ def load_model():
     try:
         # මුලින්ම gemini-1.5-flash බලනවා, ඒක නැත්නම් gemini-pro බලනවා
         model = genai.GenerativeModel('gemini-1.5-flash')
-        # නිකමට චෙක් කරලා බලනවා වැඩද කියලා
-        model.generate_content("test") 
-        return model
-    except:
-        return genai.GenerativeModel('gemini-pro')
+        
 
 model = load_model()
 
