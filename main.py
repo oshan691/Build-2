@@ -19,7 +19,7 @@ def load_model():
         model = genai.GenerativeModel('gemini-1.5-flash')
         
 
-model = load_model()
+model = load_model('gemini-1.5-flash')
 
 # 4. UI එක
 st.title("🎓 AI අධ්‍යාපනික සහායක")
