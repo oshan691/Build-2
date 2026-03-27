@@ -16,7 +16,7 @@ genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 def load_model():
     try:
         # මුලින්ම gemini-1.5-flash බලනවා, ඒක නැත්නම් gemini-pro බලනවා
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-2.5-flash')
         
 
 
